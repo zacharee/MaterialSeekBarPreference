@@ -2,19 +2,26 @@ package com.pavelsikun.seekbarpreference;
 
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.support.v4.graphics.ColorUtils;
+import android.transition.Slide;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
+
+import com.rey.material.util.ColorUtil;
+import com.rey.material.widget.Slider;
 
 /**
  * Created by Pavel Sikun on 28.05.16.
  */
 
-class PreferenceControllerDelegate implements SeekBar.OnSeekBarChangeListener, View.OnClickListener {
+class PreferenceControllerDelegate implements Slider.OnPositionChangeListener, View.OnClickListener {
 
     private final String TAG = getClass().getSimpleName();
 
@@ -34,13 +41,15 @@ class PreferenceControllerDelegate implements SeekBar.OnSeekBarChangeListener, V
     private String measurementUnit;
     private boolean dialogEnabled;
 
-    private int dialogStyle;
-
     private TextView valueView;
-    private SeekBar seekBarView;
+    private Slider seekBarView;
     private TextView measurementView;
     private LinearLayout valueHolderView;
     private FrameLayout bottomLineView;
+    private LinearLayout buttonHolderView;
+    private ImageView up;
+    private ImageView down;
+    private ImageView reset;
 
     //view stuff
     private TextView titleView, summaryView;
@@ -90,19 +99,15 @@ class PreferenceControllerDelegate implements SeekBar.OnSeekBarChangeListener, V
         else {
             TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.SeekBarPreference);
             try {
-                minValue = a.getInt(R.styleable.SeekBarPreference_msbp_minValue, DEFAULT_MIN_VALUE);
                 interval = a.getInt(R.styleable.SeekBarPreference_msbp_interval, DEFAULT_INTERVAL);
+                int saved_minValue = a.getInt(R.styleable.SeekBarPreference_msbp_minValue, DEFAULT_MIN_VALUE);
+                minValue = saved_minValue / interval;
                 int saved_maxValue = a.getInt(R.styleable.SeekBarPreference_msbp_maxValue, DEFAULT_MAX_VALUE);
-                maxValue = (saved_maxValue - minValue) / interval;
+                maxValue = (saved_maxValue) / interval;
                 dialogEnabled = a.getBoolean(R.styleable.SeekBarPreference_msbp_dialogEnabled, DEFAULT_DIALOG_ENABLED);
 
                 measurementUnit = a.getString(R.styleable.SeekBarPreference_msbp_measurementUnit);
                 currentValue = attrs.getAttributeIntValue("http://schemas.android.com/apk/res/android", "defaultValue", DEFAULT_CURRENT_VALUE);
-
-//                TODO make it work:
-//                dialogStyle = a.getInt(R.styleable.SeekBarPreference_msbp_interval, DEFAULT_DIALOG_STYLE);
-
-                dialogStyle = DEFAULT_DIALOG_STYLE;
 
                 if(isView) {
                     title = a.getString(R.styleable.SeekBarPreference_msbp_view_title);
@@ -122,8 +127,8 @@ class PreferenceControllerDelegate implements SeekBar.OnSeekBarChangeListener, V
     void onBind(View view) {
 
         if(isView) {
-            titleView = (TextView) view.findViewById(android.R.id.title);
-            summaryView = (TextView) view.findViewById(android.R.id.summary);
+            titleView = view.findViewById(android.R.id.title);
+            summaryView = view.findViewById(android.R.id.summary);
 
             titleView.setText(title);
             summaryView.setText(summary);
@@ -131,63 +136,98 @@ class PreferenceControllerDelegate implements SeekBar.OnSeekBarChangeListener, V
 
         view.setClickable(false);
 
-        seekBarView = (SeekBar) view.findViewById(R.id.seekbar);
-        measurementView = (TextView) view.findViewById(R.id.measurement_unit);
-        valueView = (TextView) view.findViewById(R.id.seekbar_value);
+        seekBarView = view.findViewById(R.id.seekbar);
+        measurementView = view.findViewById(R.id.measurement_unit);
+        valueView = view.findViewById(R.id.seekbar_value);
+        buttonHolderView = view.findViewById(R.id.button_holder);
+        up = view.findViewById(R.id.up);
+        down = view.findViewById(R.id.down);
+        reset = view.findViewById(R.id.reset);
+
+        up.setOnClickListener(this);
+        down.setOnClickListener(this);
+        reset.setOnClickListener(this);
 
         setMaxValue(maxValue);
-        seekBarView.setOnSeekBarChangeListener(this);
+        seekBarView.setOnPositionChangeListener(this);
 
         measurementView.setText(measurementUnit);
 
         setCurrentValue(currentValue);
         valueView.setText(String.valueOf(currentValue));
 
-        bottomLineView = (FrameLayout) view.findViewById(R.id.bottom_line);
-        valueHolderView = (LinearLayout) view.findViewById(R.id.value_holder);
+        bottomLineView = view.findViewById(R.id.bottom_line);
+        valueHolderView = view.findViewById(R.id.value_holder);
 
         setDialogEnabled(dialogEnabled);
         setEnabled(isEnabled(), true);
+
+        TypedArray colorAttr = context.getTheme().obtainStyledAttributes(new TypedValue().data, new int[] { R.attr.colorAccent });
+        int color = colorAttr.getColor(0, 0);
+        colorAttr.recycle();
+
+        seekBarView.setPrimaryColor(color);
+        seekBarView.setSecondaryColor(ColorUtils.setAlphaComponent(color, 0x33));
     }
 
-    @Override
-    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-        int newValue = minValue + (progress * interval);
+//    @Override
+//    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+//        int newValue = minValue + (progress * interval);
+//
+//        if (changeValueListener != null) {
+//            if (!changeValueListener.onChange(newValue)) {
+//                return;
+//            }
+//        }
+//        currentValue = newValue;
+//        valueView.setText(String.valueOf(newValue));
+//    }
 
+    @Override
+    public void onPositionChanged(Slider view, boolean fromUser, float oldPos, float newPos, int oldValue, int newValue) {
         if (changeValueListener != null) {
-            if (!changeValueListener.onChange(newValue)) {
-                return;
-            }
+            if (!changeValueListener.onChange(newValue)) return;
         }
+
         currentValue = newValue;
         valueView.setText(String.valueOf(newValue));
     }
 
-    @Override
-    public void onStartTrackingTouch(SeekBar seekBar) {
-    }
-
-    @Override
-    public void onStopTrackingTouch(SeekBar seekBar) {
-        setCurrentValue(currentValue);
-    }
+//    @Override
+//    public void onStartTrackingTouch(SeekBar seekBar) {
+//    }
+//
+//    @Override
+//    public void onStopTrackingTouch(SeekBar seekBar) {
+//        setCurrentValue(currentValue);
+//    }
 
     @Override
     public void onClick(final View v) {
-        new CustomValueDialog(context, dialogStyle, minValue, maxValue, currentValue)
-                .setPersistValueListener(new PersistValueListener() {
-                    @Override
-                    public boolean persistInt(int value) {
-                        setCurrentValue(value);
-                        seekBarView.setOnSeekBarChangeListener(null);
-                        seekBarView.setProgress(currentValue - minValue);
-                        seekBarView.setOnSeekBarChangeListener(PreferenceControllerDelegate.this);
+        if (v == valueHolderView) {
+            new CustomValueDialog(context, minValue, maxValue, currentValue)
+                    .setPersistValueListener(new PersistValueListener() {
+                        @Override
+                        public boolean persistInt(int value) {
+                            setCurrentValue(value);
+                            seekBarView.setOnPositionChangeListener(null);
+                            seekBarView.setValue(currentValue - minValue, false);
+                            seekBarView.setOnPositionChangeListener(PreferenceControllerDelegate.this);
 
-                        valueView.setText(String.valueOf(currentValue));
-                        return true;
-                    }
-                })
-                .show();
+                            valueView.setText(String.valueOf(currentValue));
+                            return true;
+                        }
+                    })
+                    .show();
+        } else if (v == up) {
+            setCurrentValue(getCurrentValue() + 1);
+        } else if (v == down) {
+            setCurrentValue(getCurrentValue() - 1);
+        } else if (v == reset) {
+            if (changeValueListener != null) {
+                changeValueListener.onReset();
+            }
+        }
     }
 
 
@@ -258,14 +298,9 @@ class PreferenceControllerDelegate implements SeekBar.OnSeekBarChangeListener, V
         this.maxValue = maxValue;
 
         if (seekBarView != null) {
-            if (minValue <= 0 && maxValue >= 0) {
-                seekBarView.setMax(maxValue - minValue);
-            }
-            else {
-                seekBarView.setMax(maxValue);
-            }
+            seekBarView.setValueRange(minValue, maxValue, false);
 
-            seekBarView.setProgress(currentValue - minValue);
+            seekBarView.setValue(currentValue, false);
         }
     }
 
@@ -275,7 +310,12 @@ class PreferenceControllerDelegate implements SeekBar.OnSeekBarChangeListener, V
 
     public void setMinValue(int minValue) {
         this.minValue = minValue;
-        setMaxValue(maxValue);
+
+        if (seekBarView != null) {
+            seekBarView.setValueRange(minValue, maxValue, false);
+
+            seekBarView.setValue(currentValue, false);
+        }
     }
 
     int getInterval() {
@@ -295,13 +335,11 @@ class PreferenceControllerDelegate implements SeekBar.OnSeekBarChangeListener, V
         if(value > maxValue) value = maxValue;
 
         if (changeValueListener != null) {
-            if (!changeValueListener.onChange(value)) {
-                return;
-            }
+            changeValueListener.onChange(value);
         }
         currentValue = value;
         if(seekBarView != null)
-            seekBarView.setProgress(currentValue - minValue);
+            seekBarView.setValue(currentValue, false);
 
         if(persistValueListener != null) {
             persistValueListener.persistInt(value);
@@ -331,9 +369,5 @@ class PreferenceControllerDelegate implements SeekBar.OnSeekBarChangeListener, V
             valueHolderView.setClickable(dialogEnabled);
             bottomLineView.setVisibility(dialogEnabled ? View.VISIBLE : View.INVISIBLE);
         }
-    }
-
-    void setDialogStyle(int dialogStyle) {
-        this.dialogStyle = dialogStyle;
     }
 }

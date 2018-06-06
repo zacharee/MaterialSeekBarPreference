@@ -2,10 +2,13 @@ package com.pavelsikun.seekbarpreference;
 
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.os.Build;
 import android.preference.Preference;
 import android.util.AttributeSet;
 import android.view.View;
+
+import java.lang.reflect.Field;
 
 /**
  * Created by Pavel Sikun on 21.05.16.
@@ -54,6 +57,11 @@ public class SeekBarPreference extends Preference implements View.OnClickListene
     }
 
     @Override
+    protected Integer onGetDefaultValue(TypedArray a, int index) {
+        return a.getInt(index, 0);
+    }
+
+    @Override
     protected void onSetInitialValue(boolean restorePersistedValue, Object defaultValue) {
         super.onSetInitialValue(restorePersistedValue, defaultValue);
         controllerDelegate.setCurrentValue(getPersistedInt(controllerDelegate.getCurrentValue()));
@@ -66,7 +74,21 @@ public class SeekBarPreference extends Preference implements View.OnClickListene
 
     @Override
     public boolean onChange(int value) {
+        persistInt(value);
         return callChangeListener(value);
+    }
+
+    @Override
+    public boolean onReset() {
+        try {
+            Field mDefaultValue = Preference.class.getDeclaredField("mDefaultValue");
+            mDefaultValue.setAccessible(true);
+
+            setCurrentValue(Integer.valueOf(mDefaultValue.get(this).toString()) / controllerDelegate.getInterval());
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     @Override
@@ -121,9 +143,5 @@ public class SeekBarPreference extends Preference implements View.OnClickListene
 
     public void setDialogEnabled(boolean dialogEnabled) {
         controllerDelegate.setDialogEnabled(dialogEnabled);
-    }
-
-    public void setDialogStyle(int dialogStyle) {
-        controllerDelegate.setDialogStyle(dialogStyle);
     }
 }

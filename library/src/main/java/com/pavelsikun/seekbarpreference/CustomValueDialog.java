@@ -26,31 +26,31 @@ class CustomValueDialog {
     private int minValue, maxValue, currentValue;
     private PersistValueListener persistValueListener;
 
-    CustomValueDialog(Context context, int theme, int minValue, int maxValue, int currentValue) {
+    CustomValueDialog(Context context, int minValue, int maxValue, int currentValue) {
         this.minValue = minValue;
         this.maxValue = maxValue;
         this.currentValue = currentValue;
 
-        init(new AlertDialog.Builder(context, theme));
+        init(new AlertDialog.Builder(context));
     }
 
     private void init(AlertDialog.Builder dialogBuilder) {
         View dialogView = LayoutInflater.from(dialogBuilder.getContext()).inflate(R.layout.value_selector_dialog, null);
         dialog = dialogBuilder.setView(dialogView).create();
 
-        TextView minValueView = (TextView) dialogView.findViewById(R.id.minValue);
-        TextView maxValueView = (TextView) dialogView.findViewById(R.id.maxValue);
-        customValueView = (EditText) dialogView.findViewById(R.id.customValue);
+        TextView minValueView = dialogView.findViewById(R.id.minValue);
+        TextView maxValueView = dialogView.findViewById(R.id.maxValue);
+        customValueView = dialogView.findViewById(R.id.customValue);
 
         minValueView.setText(String.valueOf(minValue));
         maxValueView.setText(String.valueOf(maxValue));
         customValueView.setHint(String.valueOf(currentValue));
 
-        LinearLayout colorView = (LinearLayout) dialogView.findViewById(R.id.dialog_color_area);
+        LinearLayout colorView = dialogView.findViewById(R.id.dialog_color_area);
         colorView.setBackgroundColor(fetchAccentColor(dialogBuilder.getContext()));
 
-        Button applyButton = (Button) dialogView.findViewById(R.id.btn_apply);
-        Button cancelButton = (Button) dialogView.findViewById(R.id.btn_cancel);
+        Button applyButton = dialogView.findViewById(R.id.btn_apply);
+        Button cancelButton = dialogView.findViewById(R.id.btn_cancel);
 
         applyButton.setOnClickListener(new View.OnClickListener() {
             @Override

@@ -131,8 +131,4 @@ public class SeekBarPreferenceView extends FrameLayout implements View.OnClickLi
     public void setDialogEnabled(boolean dialogEnabled) {
         controllerDelegate.setDialogEnabled(dialogEnabled);
     }
-
-    public void setDialogStyle(int dialogStyle) {
-        controllerDelegate.setDialogStyle(dialogStyle);
-    }
 }
