@@ -96,12 +96,12 @@ public class SeekBarPreferenceView extends FrameLayout implements View.OnClickLi
         controllerDelegate.setMinValue(minValue);
     }
 
-    public int getInterval() {
-        return controllerDelegate.getInterval();
+    public float getScale() {
+        return controllerDelegate.getScale();
     }
 
-    public void setInterval(int interval) {
-        controllerDelegate.setInterval(interval);
+    public void setScale(float scale) {
+        controllerDelegate.setScale(scale);
     }
 
     public int getCurrentValue() {
@@ -110,6 +110,14 @@ public class SeekBarPreferenceView extends FrameLayout implements View.OnClickLi
 
     public void setCurrentValue(int currentValue) {
         controllerDelegate.setCurrentValue(currentValue);
+    }
+
+    public float getCurrentScaledValue() {
+        return controllerDelegate.getCurrentScaledValue();
+    }
+
+    public void setCurrentScaledValue(float value) {
+        controllerDelegate.setCurrentScaledValue(value);
     }
 
     public String getMeasurementUnit() {

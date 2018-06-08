@@ -2,7 +2,7 @@
     <declare-styleable name="SeekBarPreference">
         <attr name="msbp_minValue" format="reference|integer"/>
         <attr name="msbp_maxValue" format="reference|integer"/>
-        <attr name="msbp_interval" format="reference|integer"/>
+        <attr name="msbp_scale" format="reference|float" />
         <attr name="msbp_measurementUnit" format="reference|string"/>
         <attr name="msbp_dialogEnabled" format="reference|boolean"/>
 

@@ -72,11 +72,9 @@
         <com.pavelsikun.seekbarpreference.SeekBarPreferenceView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:msbp_interval="200"
             app:msbp_maxValue="10000"
             app:msbp_measurementUnit="points"
             app:msbp_minValue="100"
-
             app:msbp_view_title="Test View"
             app:msbp_view_summary="Once upon a time we had a view"
             app:msbp_view_defaultValue="2000"/>
@@ -84,11 +82,9 @@
         <com.pavelsikun.seekbarpreference.SeekBarPreferenceView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:msbp_interval="200"
             app:msbp_maxValue="0"
             app:msbp_minValue="-2000"
             app:msbp_measurementUnit="bananas"
-
             app:msbp_view_defaultValue="-444"
             app:msbp_view_title="Test View 2"
             app:msbp_view_summary="Once upon a time we had another view"/>
@@ -96,12 +92,10 @@
         <com.pavelsikun.seekbarpreference.SeekBarPreferenceView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:msbp_interval="200"
             app:msbp_maxValue="0"
             app:msbp_minValue="-2000"
             app:msbp_measurementUnit="bananas"
             app:msbp_dialogEnabled="false"
-
             app:msbp_view_defaultValue="-444"
             app:msbp_view_title="Test View 3"
             app:msbp_view_summary="This one won\'t show dialog"/>
@@ -109,11 +103,9 @@
         <com.pavelsikun.seekbarpreference.SeekBarPreferenceView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:msbp_interval="200"
             app:msbp_maxValue="3000"
             app:msbp_minValue="-2000"
             app:msbp_measurementUnit="oranges"
-
             app:msbp_view_defaultValue="444"
             app:msbp_view_title="Test View 4"
             app:msbp_view_summary="This one is Disabled"

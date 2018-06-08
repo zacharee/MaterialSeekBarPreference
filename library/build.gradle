@@ -1,11 +1,12 @@
 apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
 
 android {
     compileSdkVersion 27
     buildToolsVersion "27.0.3"
 
     defaultConfig {
-        minSdkVersion 14
+        minSdkVersion 16
         targetSdkVersion 27
         versionCode 13
         versionName "2.3.0"
@@ -25,6 +26,10 @@ dependencies {
     implementation ('com.github.rey5137:material:1.2.4') {
         exclude group: 'com.android.support'
     }
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.2.41"
+}
+repositories {
+    mavenCentral()
 }
 
 //ext {

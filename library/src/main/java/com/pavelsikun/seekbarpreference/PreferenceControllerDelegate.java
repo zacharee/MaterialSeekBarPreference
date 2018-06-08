@@ -2,54 +2,47 @@ package com.pavelsikun.seekbarpreference;
 
 import android.content.Context;
 import android.content.res.TypedArray;
-import android.support.v4.graphics.ColorUtils;
-import android.transition.Slide;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.util.TypedValue;
+import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.FrameLayout;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.SeekBar;
 import android.widget.TextView;
 
-import com.rey.material.util.ColorUtil;
-import com.rey.material.widget.Slider;
+import java.text.DecimalFormat;
 
 /**
  * Created by Pavel Sikun on 28.05.16.
  */
 
-class PreferenceControllerDelegate implements Slider.OnPositionChangeListener, View.OnClickListener {
+public class PreferenceControllerDelegate implements SeekBarView.SeekBarListener {
+    public static final DecimalFormat FORMAT = new DecimalFormat("0.##");
 
     private final String TAG = getClass().getSimpleName();
 
     private static final int DEFAULT_CURRENT_VALUE = 50;
     private static final int DEFAULT_MIN_VALUE = 0;
     private static final int DEFAULT_MAX_VALUE = 100;
-    private static final int DEFAULT_INTERVAL = 1;
+    private static final float DEFAULT_SCALE = 1f;
     private static final boolean DEFAULT_DIALOG_ENABLED = true;
     private static final boolean DEFAULT_IS_ENABLED = true;
 
-    private static final int DEFAULT_DIALOG_STYLE = R.style.MSB_Dialog_Default;
-
     private int maxValue;
     private int minValue;
-    private int interval;
+    private float scale;
     private int currentValue;
     private String measurementUnit;
     private boolean dialogEnabled;
 
-    private TextView valueView;
-    private Slider seekBarView;
-    private TextView measurementView;
-    private LinearLayout valueHolderView;
-    private FrameLayout bottomLineView;
-    private LinearLayout buttonHolderView;
-    private ImageView up;
-    private ImageView down;
-    private ImageView reset;
+//    private TextView valueView;
+    private SeekBarView seekBarView;
+//    private TextView measurementView;
+//    private LinearLayout valueHolderView;
+//    private FrameLayout bottomLineView;
+//    private LinearLayout buttonHolderView;
+//    private ImageView up;
+//    private ImageView down;
+//    private ImageView reset;
 
     //view stuff
     private TextView titleView, summaryView;
@@ -63,6 +56,10 @@ class PreferenceControllerDelegate implements Slider.OnPositionChangeListener, V
     private ViewStateListener viewStateListener;
     private PersistValueListener persistValueListener;
     private ChangeValueListener changeValueListener;
+
+    public static String formatValue(String value) {
+        return FORMAT.format(Double.parseDouble(value));
+    }
 
     interface ViewStateListener {
         boolean isEnabled();
@@ -91,7 +88,7 @@ class PreferenceControllerDelegate implements Slider.OnPositionChangeListener, V
             currentValue = DEFAULT_CURRENT_VALUE;
             minValue = DEFAULT_MIN_VALUE;
             maxValue = DEFAULT_MAX_VALUE;
-            interval = DEFAULT_INTERVAL;
+            scale = DEFAULT_SCALE;
             dialogEnabled = DEFAULT_DIALOG_ENABLED;
 
             isEnabled = DEFAULT_IS_ENABLED;
@@ -99,15 +96,14 @@ class PreferenceControllerDelegate implements Slider.OnPositionChangeListener, V
         else {
             TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.SeekBarPreference);
             try {
-                interval = a.getInt(R.styleable.SeekBarPreference_msbp_interval, DEFAULT_INTERVAL);
-                int saved_minValue = a.getInt(R.styleable.SeekBarPreference_msbp_minValue, DEFAULT_MIN_VALUE);
-                minValue = saved_minValue / interval;
-                int saved_maxValue = a.getInt(R.styleable.SeekBarPreference_msbp_maxValue, DEFAULT_MAX_VALUE);
-                maxValue = (saved_maxValue) / interval;
+                minValue = a.getInt(R.styleable.SeekBarPreference_msbp_minValue, DEFAULT_MIN_VALUE);
+                maxValue = (a.getInt(R.styleable.SeekBarPreference_msbp_maxValue, DEFAULT_MAX_VALUE));
                 dialogEnabled = a.getBoolean(R.styleable.SeekBarPreference_msbp_dialogEnabled, DEFAULT_DIALOG_ENABLED);
 
                 measurementUnit = a.getString(R.styleable.SeekBarPreference_msbp_measurementUnit);
                 currentValue = attrs.getAttributeIntValue("http://schemas.android.com/apk/res/android", "defaultValue", DEFAULT_CURRENT_VALUE);
+
+                scale = a.getFloat(R.styleable.SeekBarPreference_msbp_scale, DEFAULT_SCALE);
 
                 if(isView) {
                     title = a.getString(R.styleable.SeekBarPreference_msbp_view_title);
@@ -125,6 +121,10 @@ class PreferenceControllerDelegate implements Slider.OnPositionChangeListener, V
 
 
     void onBind(View view) {
+        LinearLayout widgetHolder = view.findViewById(R.id.layout_wrapper);
+        seekBarView = (SeekBarView) LayoutInflater.from(context).inflate(R.layout.seekbar, widgetHolder, false);
+        widgetHolder.addView(seekBarView);
+        seekBarView.setDelegate(this);
 
         if(isView) {
             titleView = view.findViewById(android.R.id.title);
@@ -136,38 +136,34 @@ class PreferenceControllerDelegate implements Slider.OnPositionChangeListener, V
 
         view.setClickable(false);
 
-        seekBarView = view.findViewById(R.id.seekbar);
-        measurementView = view.findViewById(R.id.measurement_unit);
-        valueView = view.findViewById(R.id.seekbar_value);
-        buttonHolderView = view.findViewById(R.id.button_holder);
-        up = view.findViewById(R.id.up);
-        down = view.findViewById(R.id.down);
-        reset = view.findViewById(R.id.reset);
+//        seekBarView = view.findViewById(R.id.seekbar);
+//        measurementView = view.findViewById(R.id.measurement_unit);
+//        valueView = view.findViewById(R.id.seekbar_value);
+//        buttonHolderView = view.findViewById(R.id.button_holder);
+//        up = view.findViewById(R.id.up);
+//        down = view.findViewById(R.id.down);
+//        reset = view.findViewById(R.id.reset);
 
-        up.setOnClickListener(this);
-        down.setOnClickListener(this);
-        reset.setOnClickListener(this);
+//        up.setOnClickListener(this);
+//        down.setOnClickListener(this);
+//        reset.setOnClickListener(this);
 
+        seekBarView.onBind();
         setMaxValue(maxValue);
-        seekBarView.setOnPositionChangeListener(this);
-
-        measurementView.setText(measurementUnit);
-
+        setMinValue(minValue);
         setCurrentValue(currentValue);
-        valueView.setText(String.valueOf(currentValue));
 
-        bottomLineView = view.findViewById(R.id.bottom_line);
-        valueHolderView = view.findViewById(R.id.value_holder);
+        seekBarView.setOnProgressChangeListener(this);
+
+//        measurementView.setText(measurementUnit);
+//        valueView.setText(formatValue(String.valueOf(currentValue * scale)));
+
+//        bottomLineView = view.findViewById(R.id.bottom_line);
+//        valueHolderView = view.findViewById(R.id.value_holder);
 
         setDialogEnabled(dialogEnabled);
         setEnabled(isEnabled(), true);
-
-        TypedArray colorAttr = context.getTheme().obtainStyledAttributes(new TypedValue().data, new int[] { R.attr.colorAccent });
-        int color = colorAttr.getColor(0, 0);
-        colorAttr.recycle();
-
-        seekBarView.setPrimaryColor(color);
-        seekBarView.setSecondaryColor(ColorUtils.setAlphaComponent(color, 0x33));
+        setMeasurementUnit(measurementUnit);
     }
 
 //    @Override
@@ -183,17 +179,27 @@ class PreferenceControllerDelegate implements Slider.OnPositionChangeListener, V
 //        valueView.setText(String.valueOf(newValue));
 //    }
 
+    void onClick(View v) {
+        seekBarView.onClick(v);
+    }
+
     @Override
-    public void onPositionChanged(Slider view, boolean fromUser, float oldPos, float newPos, int oldValue, int newValue) {
+    public void onProgressChanged(int newValue) {
         if (changeValueListener != null) {
             if (!changeValueListener.onChange(newValue)) return;
         }
 
         currentValue = newValue;
-        valueView.setText(String.valueOf(newValue));
     }
 
-//    @Override
+    @Override
+    public void onProgressReset() {
+        if (changeValueListener != null) {
+            changeValueListener.onReset();
+        }
+    }
+
+    //    @Override
 //    public void onStartTrackingTouch(SeekBar seekBar) {
 //    }
 //
@@ -201,34 +207,6 @@ class PreferenceControllerDelegate implements Slider.OnPositionChangeListener, V
 //    public void onStopTrackingTouch(SeekBar seekBar) {
 //        setCurrentValue(currentValue);
 //    }
-
-    @Override
-    public void onClick(final View v) {
-        if (v == valueHolderView) {
-            new CustomValueDialog(context, minValue, maxValue, currentValue)
-                    .setPersistValueListener(new PersistValueListener() {
-                        @Override
-                        public boolean persistInt(int value) {
-                            setCurrentValue(value);
-                            seekBarView.setOnPositionChangeListener(null);
-                            seekBarView.setValue(currentValue - minValue, false);
-                            seekBarView.setOnPositionChangeListener(PreferenceControllerDelegate.this);
-
-                            valueView.setText(String.valueOf(currentValue));
-                            return true;
-                        }
-                    })
-                    .show();
-        } else if (v == up) {
-            setCurrentValue(getCurrentValue() + 1);
-        } else if (v == down) {
-            setCurrentValue(getCurrentValue() - 1);
-        } else if (v == reset) {
-            if (changeValueListener != null) {
-                changeValueListener.onReset();
-            }
-        }
-    }
 
 
     String getTitle() {
@@ -271,12 +249,6 @@ class PreferenceControllerDelegate implements Slider.OnPositionChangeListener, V
         if(seekBarView != null) { //theoretically might not always work
             Log.d(TAG, "view is disabled!");
             seekBarView.setEnabled(enabled);
-            valueView.setEnabled(enabled);
-            valueHolderView.setClickable(enabled);
-            valueHolderView.setEnabled(enabled);
-
-            measurementView.setEnabled(enabled);
-            bottomLineView.setEnabled(enabled);
 
             if(isView) {
                 titleView.setEnabled(enabled);
@@ -298,8 +270,7 @@ class PreferenceControllerDelegate implements Slider.OnPositionChangeListener, V
         this.maxValue = maxValue;
 
         if (seekBarView != null) {
-            seekBarView.setValueRange(minValue, maxValue, false);
-
+            seekBarView.setValueRange(minValue, this.maxValue, false);
             seekBarView.setValue(currentValue, false);
         }
     }
@@ -312,18 +283,17 @@ class PreferenceControllerDelegate implements Slider.OnPositionChangeListener, V
         this.minValue = minValue;
 
         if (seekBarView != null) {
-            seekBarView.setValueRange(minValue, maxValue, false);
-
+            seekBarView.setValueRange(this.minValue, maxValue, false);
             seekBarView.setValue(currentValue, false);
         }
     }
 
-    int getInterval() {
-        return interval;
+    float getScale() {
+        return scale;
     }
 
-    void setInterval(int interval) {
-        this.interval = interval;
+    void setScale(float scale) {
+        this.scale = scale;
     }
 
     int getCurrentValue() {
@@ -334,16 +304,26 @@ class PreferenceControllerDelegate implements Slider.OnPositionChangeListener, V
         if(value < minValue) value = minValue;
         if(value > maxValue) value = maxValue;
 
-        if (changeValueListener != null) {
-            changeValueListener.onChange(value);
+        if (changeValueListener != null && currentValue != value) {
+            if (!changeValueListener.onChange(value)) return;
         }
         currentValue = value;
-        if(seekBarView != null)
+
+        if(seekBarView != null) {
             seekBarView.setValue(currentValue, false);
+        }
 
         if(persistValueListener != null) {
             persistValueListener.persistInt(value);
         }
+    }
+
+    float getCurrentScaledValue() {
+        return currentValue * scale;
+    }
+
+    void setCurrentScaledValue(float value) {
+        setCurrentValue((int)(value / scale));
     }
 
     String getMeasurementUnit() {
@@ -352,9 +332,7 @@ class PreferenceControllerDelegate implements Slider.OnPositionChangeListener, V
 
     void setMeasurementUnit(String measurementUnit) {
         this.measurementUnit = measurementUnit;
-        if(measurementView != null) {
-            measurementView.setText(measurementUnit);
-        }
+        if (seekBarView != null) seekBarView.measurementView.setText(measurementUnit);
     }
 
     boolean isDialogEnabled() {
@@ -363,11 +341,6 @@ class PreferenceControllerDelegate implements Slider.OnPositionChangeListener, V
 
     void setDialogEnabled(boolean dialogEnabled) {
         this.dialogEnabled = dialogEnabled;
-
-        if(valueHolderView != null && bottomLineView != null) {
-            valueHolderView.setOnClickListener(dialogEnabled ? this : null);
-            valueHolderView.setClickable(dialogEnabled);
-            bottomLineView.setVisibility(dialogEnabled ? View.VISIBLE : View.INVISIBLE);
-        }
+        if (seekBarView != null) seekBarView.setDialogEnabled(dialogEnabled);
     }
 }

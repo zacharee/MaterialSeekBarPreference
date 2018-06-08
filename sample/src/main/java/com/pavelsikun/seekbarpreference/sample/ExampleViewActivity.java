@@ -88,7 +88,6 @@ public class ExampleViewActivity extends AppCompatActivity {
         view.setSummary("This one was added from Java");
         view.setMaxValue(5000);
         view.setMinValue(-5000);
-        view.setInterval(10);
         view.setCurrentValue(0);
         view.setMeasurementUnit("points");
         view.setOnValueSelectedListener(new PersistValueListener() {

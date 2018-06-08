@@ -57,14 +57,20 @@ public class SeekBarPreference extends Preference implements View.OnClickListene
     }
 
     @Override
+    public void setDefaultValue(Object defaultValue) {
+        super.setDefaultValue(defaultValue);
+
+        if (getPersistedInt(Integer.MIN_VALUE) == Integer.MIN_VALUE) controllerDelegate.setCurrentValue(Integer.valueOf(defaultValue.toString()));
+    }
+
+    @Override
     protected Integer onGetDefaultValue(TypedArray a, int index) {
         return a.getInt(index, 0);
     }
 
     @Override
     protected void onSetInitialValue(boolean restorePersistedValue, Object defaultValue) {
-        super.onSetInitialValue(restorePersistedValue, defaultValue);
-        controllerDelegate.setCurrentValue(getPersistedInt(controllerDelegate.getCurrentValue()));
+        controllerDelegate.setCurrentValue(getPersistedInt((defaultValue != null ? Integer.valueOf(defaultValue.toString()) : controllerDelegate.getCurrentValue())));
     }
 
     @Override
@@ -75,7 +81,7 @@ public class SeekBarPreference extends Preference implements View.OnClickListene
     @Override
     public boolean onChange(int value) {
         persistInt(value);
-        return callChangeListener(value);
+        return callChangeListener(value * getScale());
     }
 
     @Override
@@ -84,7 +90,7 @@ public class SeekBarPreference extends Preference implements View.OnClickListene
             Field mDefaultValue = Preference.class.getDeclaredField("mDefaultValue");
             mDefaultValue.setAccessible(true);
 
-            setCurrentValue(Integer.valueOf(mDefaultValue.get(this).toString()) / controllerDelegate.getInterval());
+            controllerDelegate.setCurrentValue(Integer.valueOf(mDefaultValue.get(this).toString()));
             return true;
         } catch (Exception e) {
             return false;
@@ -112,12 +118,12 @@ public class SeekBarPreference extends Preference implements View.OnClickListene
         controllerDelegate.setMinValue(minValue);
     }
 
-    public int getInterval() {
-        return controllerDelegate.getInterval();
+    public float getScale() {
+        return controllerDelegate.getScale();
     }
 
-    public void setInterval(int interval) {
-        controllerDelegate.setInterval(interval);
+    public void setScale(float scale) {
+        controllerDelegate.setScale(scale);
     }
 
     public int getCurrentValue() {
@@ -126,6 +132,15 @@ public class SeekBarPreference extends Preference implements View.OnClickListene
 
     public void setCurrentValue(int currentValue) {
         controllerDelegate.setCurrentValue(currentValue);
+        persistInt(controllerDelegate.getCurrentValue());
+    }
+
+    public float getCurrentScaledValue() {
+        return controllerDelegate.getCurrentScaledValue();
+    }
+
+    public void setCurrentScaledValue(float value) {
+        controllerDelegate.setCurrentScaledValue(value);
         persistInt(controllerDelegate.getCurrentValue());
     }
 

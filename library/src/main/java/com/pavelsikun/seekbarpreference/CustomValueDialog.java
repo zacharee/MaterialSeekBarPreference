@@ -23,13 +23,14 @@ class CustomValueDialog {
     private Dialog dialog;
     private EditText customValueView;
 
-    private int minValue, maxValue, currentValue;
+    private float minValue, maxValue, currentValue, scale;
     private PersistValueListener persistValueListener;
 
-    CustomValueDialog(Context context, int minValue, int maxValue, int currentValue) {
-        this.minValue = minValue;
-        this.maxValue = maxValue;
-        this.currentValue = currentValue;
+    CustomValueDialog(Context context, int minValue, int maxValue, int currentValue, float scale) {
+        this.scale = scale;
+        this.minValue = minValue * scale;
+        this.maxValue = maxValue * scale;
+        this.currentValue = currentValue * scale;
 
         init(new AlertDialog.Builder(context));
     }
@@ -42,9 +43,9 @@ class CustomValueDialog {
         TextView maxValueView = dialogView.findViewById(R.id.maxValue);
         customValueView = dialogView.findViewById(R.id.customValue);
 
-        minValueView.setText(String.valueOf(minValue));
-        maxValueView.setText(String.valueOf(maxValue));
-        customValueView.setHint(String.valueOf(currentValue));
+        minValueView.setText(PreferenceControllerDelegate.formatValue(String.valueOf(minValue)));
+        maxValueView.setText(PreferenceControllerDelegate.formatValue(String.valueOf(maxValue)));
+        customValueView.setHint(PreferenceControllerDelegate.formatValue(String.valueOf(currentValue)));
 
         LinearLayout colorView = dialogView.findViewById(R.id.dialog_color_area);
         colorView.setBackgroundColor(fetchAccentColor(dialogBuilder.getContext()));
@@ -87,10 +88,10 @@ class CustomValueDialog {
     }
 
     private void tryApply() {
-        int value;
+        float value;
 
         try {
-            value = Integer.parseInt(customValueView.getText().toString());
+            value = Float.parseFloat(customValueView.getText().toString());
             if (value > maxValue) {
                 Log.e(TAG, "wrong input( > than required): " + customValueView.getText().toString());
                 notifyWrongInput();
@@ -103,13 +104,13 @@ class CustomValueDialog {
             }
         }
         catch (Exception e) {
-            Log.e(TAG, "worng input(non-integer): " + customValueView.getText().toString());
+            Log.e(TAG, "wrong input(non-integer): " + customValueView.getText().toString());
             notifyWrongInput();
             return;
         }
 
         if(persistValueListener != null) {
-            persistValueListener.persistInt(value);
+            persistValueListener.persistInt((int)(value / scale));
             dialog.dismiss();
         }
     }
