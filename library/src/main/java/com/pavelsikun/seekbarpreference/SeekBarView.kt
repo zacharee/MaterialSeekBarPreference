@@ -11,8 +11,6 @@ import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
 import com.pavelsikun.seekbarpreference.PreferenceControllerDelegate.formatValue
-import com.pavelsikun.seekbarpreference.R.id.maxValue
-import com.pavelsikun.seekbarpreference.R.id.minValue
 import com.rey.material.widget.Slider
 
 class SeekBarView : ConstraintLayout, View.OnClickListener, Slider.OnPositionChangeListener {
@@ -99,6 +97,9 @@ class SeekBarView : ConstraintLayout, View.OnClickListener, Slider.OnPositionCha
         valueHolderView.isClickable = enabled
         valueHolderView.isEnabled = enabled
 
+        seekBar.isEnabled = enabled
+        seekBar.isClickable = enabled
+
         measurementView.isEnabled = enabled
         bottomLineView.isEnabled = enabled
         buttonHolderView.isEnabled = enabled
@@ -119,7 +120,7 @@ class SeekBarView : ConstraintLayout, View.OnClickListener, Slider.OnPositionCha
 
     fun setValue(value: Float, animate: Boolean) {
         seekBar.setOnPositionChangeListener(null)
-        seekBar.setValue(value, false)
+        seekBar.setValue(value,true)
         seekBar.setOnPositionChangeListener(this)
 
         valueView.text = formatValue((delegate.currentScaledValue).toString())

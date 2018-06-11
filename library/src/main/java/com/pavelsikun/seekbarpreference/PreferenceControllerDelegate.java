@@ -255,7 +255,6 @@ public class PreferenceControllerDelegate implements SeekBarView.SeekBarListener
                 summaryView.setEnabled(enabled);
             }
         }
-
     }
 
     void setEnabled(boolean enabled) {
@@ -310,7 +309,7 @@ public class PreferenceControllerDelegate implements SeekBarView.SeekBarListener
         currentValue = value;
 
         if(seekBarView != null) {
-            seekBarView.setValue(currentValue, false);
+            seekBarView.setValue(currentValue, true);
         }
 
         if(persistValueListener != null) {
