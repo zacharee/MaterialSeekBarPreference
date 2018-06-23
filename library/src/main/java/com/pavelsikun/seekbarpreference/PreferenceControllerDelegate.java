@@ -51,11 +51,13 @@ public class PreferenceControllerDelegate implements SeekBarView.SeekBarListener
     private boolean isEnabled;
 
     //controller stuff
-    private boolean isView = false;
+    private boolean isView;
     private Context context;
     private ViewStateListener viewStateListener;
     private PersistValueListener persistValueListener;
     private ChangeValueListener changeValueListener;
+
+    private int defaultValue;
 
     public static String formatValue(String value) {
         return FORMAT.format(Double.parseDouble(value));
@@ -95,13 +97,15 @@ public class PreferenceControllerDelegate implements SeekBarView.SeekBarListener
         }
         else {
             TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.SeekBarPreference);
+            TypedArray internal = context.obtainStyledAttributes(attrs, com.android.internal.R.styleable.Preference);
             try {
                 minValue = a.getInt(R.styleable.SeekBarPreference_msbp_minValue, DEFAULT_MIN_VALUE);
                 maxValue = (a.getInt(R.styleable.SeekBarPreference_msbp_maxValue, DEFAULT_MAX_VALUE));
                 dialogEnabled = a.getBoolean(R.styleable.SeekBarPreference_msbp_dialogEnabled, DEFAULT_DIALOG_ENABLED);
 
                 measurementUnit = a.getString(R.styleable.SeekBarPreference_msbp_measurementUnit);
-                currentValue = attrs.getAttributeIntValue("http://schemas.android.com/apk/res/android", "defaultValue", DEFAULT_CURRENT_VALUE);
+                currentValue = internal.getInt(com.android.internal.R.styleable.Preference_defaultValue, DEFAULT_CURRENT_VALUE);
+                defaultValue = internal.getInt(com.android.internal.R.styleable.Preference_defaultValue, DEFAULT_CURRENT_VALUE);
 
                 scale = a.getFloat(R.styleable.SeekBarPreference_msbp_scale, DEFAULT_SCALE);
 
@@ -109,12 +113,14 @@ public class PreferenceControllerDelegate implements SeekBarView.SeekBarListener
                     title = a.getString(R.styleable.SeekBarPreference_msbp_view_title);
                     summary = a.getString(R.styleable.SeekBarPreference_msbp_view_summary);
                     currentValue = a.getInt(R.styleable.SeekBarPreference_msbp_view_defaultValue, DEFAULT_CURRENT_VALUE);
+                    defaultValue = a.getInt(R.styleable.SeekBarPreference_msbp_view_defaultValue, DEFAULT_CURRENT_VALUE);
 
                     isEnabled = a.getBoolean(R.styleable.SeekBarPreference_msbp_view_enabled, DEFAULT_IS_ENABLED);
                 }
             }
             finally {
                 a.recycle();
+                internal.recycle();
             }
         }
     }
@@ -126,27 +132,15 @@ public class PreferenceControllerDelegate implements SeekBarView.SeekBarListener
         widgetHolder.addView(seekBarView);
         seekBarView.setDelegate(this);
 
-        if(isView) {
-            titleView = view.findViewById(android.R.id.title);
-            summaryView = view.findViewById(android.R.id.summary);
+        titleView = view.findViewById(android.R.id.title);
+        summaryView = view.findViewById(android.R.id.summary);
 
-            titleView.setText(title);
-            summaryView.setText(summary);
+        if(isView) {
+            setTitle(title);
+            setSummary(summary);
         }
 
         view.setClickable(false);
-
-//        seekBarView = view.findViewById(R.id.seekbar);
-//        measurementView = view.findViewById(R.id.measurement_unit);
-//        valueView = view.findViewById(R.id.seekbar_value);
-//        buttonHolderView = view.findViewById(R.id.button_holder);
-//        up = view.findViewById(R.id.up);
-//        down = view.findViewById(R.id.down);
-//        reset = view.findViewById(R.id.reset);
-
-//        up.setOnClickListener(this);
-//        down.setOnClickListener(this);
-//        reset.setOnClickListener(this);
 
         seekBarView.onBind();
         setMaxValue(maxValue);
@@ -155,29 +149,10 @@ public class PreferenceControllerDelegate implements SeekBarView.SeekBarListener
 
         seekBarView.setOnProgressChangeListener(this);
 
-//        measurementView.setText(measurementUnit);
-//        valueView.setText(formatValue(String.valueOf(currentValue * scale)));
-
-//        bottomLineView = view.findViewById(R.id.bottom_line);
-//        valueHolderView = view.findViewById(R.id.value_holder);
-
         setDialogEnabled(dialogEnabled);
         setEnabled(isEnabled(), true);
         setMeasurementUnit(measurementUnit);
     }
-
-//    @Override
-//    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-//        int newValue = minValue + (progress * interval);
-//
-//        if (changeValueListener != null) {
-//            if (!changeValueListener.onChange(newValue)) {
-//                return;
-//            }
-//        }
-//        currentValue = newValue;
-//        valueView.setText(String.valueOf(newValue));
-//    }
 
     void onClick(View v) {
         seekBarView.onClick(v);
@@ -194,20 +169,11 @@ public class PreferenceControllerDelegate implements SeekBarView.SeekBarListener
 
     @Override
     public void onProgressReset() {
+        setCurrentValue(defaultValue);
         if (changeValueListener != null) {
             changeValueListener.onReset();
         }
     }
-
-    //    @Override
-//    public void onStartTrackingTouch(SeekBar seekBar) {
-//    }
-//
-//    @Override
-//    public void onStopTrackingTouch(SeekBar seekBar) {
-//        setCurrentValue(currentValue);
-//    }
-
 
     String getTitle() {
         return title;
@@ -216,7 +182,8 @@ public class PreferenceControllerDelegate implements SeekBarView.SeekBarListener
     void setTitle(String title) {
         this.title = title;
         if(titleView != null) {
-            titleView.setText(title);
+            if (title != null) titleView.setText(title);
+            else titleView.setVisibility(View.GONE);
         }
     }
 
@@ -226,8 +193,9 @@ public class PreferenceControllerDelegate implements SeekBarView.SeekBarListener
 
     void setSummary(String summary) {
         this.summary = summary;
-        if(seekBarView != null) {
-            summaryView.setText(summary);
+        if(summaryView != null) {
+            if (summary != null) summaryView.setText(summary);
+            else summaryView.setVisibility(View.GONE);
         }
     }
 
@@ -315,6 +283,17 @@ public class PreferenceControllerDelegate implements SeekBarView.SeekBarListener
         if(persistValueListener != null) {
             persistValueListener.persistInt(value);
         }
+    }
+
+    void setDefaultValue(int value) {
+        if (value < minValue) value = minValue;
+        if (value > maxValue) value = maxValue;
+
+        defaultValue = value;
+    }
+
+    int getDefaultValue() {
+        return defaultValue;
     }
 
     float getCurrentScaledValue() {

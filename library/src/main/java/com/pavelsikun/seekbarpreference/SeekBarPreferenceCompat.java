@@ -62,11 +62,12 @@ public class SeekBarPreferenceCompat extends Preference implements View.OnClickL
         super.setDefaultValue(defaultValue);
 
         if (getPersistedInt(Integer.MIN_VALUE) == Integer.MIN_VALUE) controllerDelegate.setCurrentValue(Integer.valueOf(defaultValue.toString()));
+        controllerDelegate.setDefaultValue(Integer.valueOf(defaultValue.toString()));
     }
 
     @Override
     protected Integer onGetDefaultValue(TypedArray a, int index) {
-        return a.getInt(index, 0);
+            return a.getInt(index, 0);
     }
 
     @Override

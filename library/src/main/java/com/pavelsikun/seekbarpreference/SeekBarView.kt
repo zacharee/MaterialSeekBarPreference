@@ -89,6 +89,8 @@ class SeekBarView : ConstraintLayout, View.OnClickListener, Slider.OnPositionCha
     override fun onPositionChanged(view: Slider?, fromUser: Boolean, oldPos: Float, newPos: Float, oldValue: Int, newValue: Int) {
         listener?.onProgressChanged(newValue)
         valueView.text = formatValue((delegate.currentScaledValue).toString())
+
+        updateFill(newValue)
     }
 
     override fun setEnabled(enabled: Boolean) {
@@ -124,10 +126,21 @@ class SeekBarView : ConstraintLayout, View.OnClickListener, Slider.OnPositionCha
         seekBar.setOnPositionChangeListener(this)
 
         valueView.text = formatValue((delegate.currentScaledValue).toString())
+
+        updateFill(value.toInt())
     }
 
     fun setValueRange(min: Int, max: Int, animate: Boolean) {
         seekBar.setValueRange(min, max, animate)
+    }
+
+    private fun updateFill(value: Int) {
+        if (!seekBar.isThumbStrokeAnimatorRunning) {
+            if (value == delegate.defaultValue)
+                seekBar.setThumbFillPercent(0)
+            else
+                seekBar.setThumbFillPercent(1)
+        }
     }
 
     interface SeekBarListener {

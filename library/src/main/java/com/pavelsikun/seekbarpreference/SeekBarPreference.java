@@ -8,8 +8,6 @@ import android.preference.Preference;
 import android.util.AttributeSet;
 import android.view.View;
 
-import java.lang.reflect.Field;
-
 /**
  * Created by Pavel Sikun on 21.05.16.
  */
@@ -61,6 +59,7 @@ public class SeekBarPreference extends Preference implements View.OnClickListene
         super.setDefaultValue(defaultValue);
 
         if (getPersistedInt(Integer.MIN_VALUE) == Integer.MIN_VALUE) controllerDelegate.setCurrentValue(Integer.valueOf(defaultValue.toString()));
+        controllerDelegate.setDefaultValue(Integer.valueOf(defaultValue.toString()));
     }
 
     @Override
@@ -86,15 +85,7 @@ public class SeekBarPreference extends Preference implements View.OnClickListene
 
     @Override
     public boolean onReset() {
-        try {
-            Field mDefaultValue = Preference.class.getDeclaredField("mDefaultValue");
-            mDefaultValue.setAccessible(true);
-
-            controllerDelegate.setCurrentValue(Integer.valueOf(mDefaultValue.get(this).toString()));
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
+        return false;
     }
 
     @Override
