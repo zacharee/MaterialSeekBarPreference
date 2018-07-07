@@ -150,4 +150,8 @@ public class SeekBarPreference extends Preference implements View.OnClickListene
     public void setDialogEnabled(boolean dialogEnabled) {
         controllerDelegate.setDialogEnabled(dialogEnabled);
     }
+
+    public Integer getDefaultValue() {
+        return controllerDelegate.getDefaultValue();
+    }
 }

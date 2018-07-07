@@ -161,4 +161,8 @@ public class SeekBarPreferenceCompat extends Preference implements View.OnClickL
     public void setDialogEnabled(boolean dialogEnabled) {
         controllerDelegate.setDialogEnabled(dialogEnabled);
     }
+
+    public Integer getDefaultValue() {
+        return controllerDelegate.getDefaultValue();
+    }
 }

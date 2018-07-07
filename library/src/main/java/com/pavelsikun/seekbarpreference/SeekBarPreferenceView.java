@@ -50,6 +50,12 @@ public class SeekBarPreferenceView extends FrameLayout implements View.OnClickLi
     }
 
     @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        removeAllViews();
+    }
+
+    @Override
     public void onClick(final View v) {
         controllerDelegate.onClick(v);
     }
@@ -138,5 +144,9 @@ public class SeekBarPreferenceView extends FrameLayout implements View.OnClickLi
 
     public void setDialogEnabled(boolean dialogEnabled) {
         controllerDelegate.setDialogEnabled(dialogEnabled);
+    }
+
+    public Integer getDefaultValue() {
+        return controllerDelegate.getDefaultValue();
     }
 }
