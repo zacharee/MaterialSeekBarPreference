@@ -1,6 +1,8 @@
 package com.pavelsikun.seekbarpreference;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -9,6 +11,7 @@ import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import java.lang.reflect.Field;
 import java.text.DecimalFormat;
 
 /**
@@ -96,36 +99,51 @@ public class PreferenceControllerDelegate implements SeekBarView.SeekBarListener
             isEnabled = DEFAULT_IS_ENABLED;
         }
         else {
-            int prefRes = context.getResources().getIdentifier("Preference", "styleable", "android");
-            int defValRes = context.getResources().getIdentifier("Preference_defaultValue", "styleable", "android");
-
-            TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.SeekBarPreference);
-            TypedArray internal = context.obtainStyledAttributes(attrs, context.getResources().getIntArray(prefRes));
-
             try {
-                minValue = a.getInt(R.styleable.SeekBarPreference_msbp_minValue, DEFAULT_MIN_VALUE);
-                maxValue = (a.getInt(R.styleable.SeekBarPreference_msbp_maxValue, DEFAULT_MAX_VALUE));
-                dialogEnabled = a.getBoolean(R.styleable.SeekBarPreference_msbp_dialogEnabled, DEFAULT_DIALOG_ENABLED);
+                @SuppressLint("PrivateApi")
+                Class styleable = Class.forName("com.android.internal.R$styleable");
 
-                measurementUnit = a.getString(R.styleable.SeekBarPreference_msbp_measurementUnit);
-                currentValue = internal.getInt(context.getResources().getInteger(defValRes), DEFAULT_CURRENT_VALUE);
-                defaultValue = internal.getInt(context.getResources().getInteger(defValRes), DEFAULT_CURRENT_VALUE);
+                Field prefResField = styleable.getDeclaredField("Preference");
+                prefResField.setAccessible(true);
 
-                scale = a.getFloat(R.styleable.SeekBarPreference_msbp_scale, DEFAULT_SCALE);
+                Field defValField = styleable.getDeclaredField("Preference_defaultValue");
+                defValField.setAccessible(true);
 
-                if(isView) {
-                    title = a.getString(R.styleable.SeekBarPreference_msbp_view_title);
-                    summary = a.getString(R.styleable.SeekBarPreference_msbp_view_summary);
-                    currentValue = a.getInt(R.styleable.SeekBarPreference_msbp_view_defaultValue, DEFAULT_CURRENT_VALUE);
-                    defaultValue = a.getInt(R.styleable.SeekBarPreference_msbp_view_defaultValue, DEFAULT_CURRENT_VALUE);
+                int[] prefRes = (int[]) prefResField.get(null);
+                int defValRes = (Integer) defValField.get(null);
 
-                    isEnabled = a.getBoolean(R.styleable.SeekBarPreference_msbp_view_enabled, DEFAULT_IS_ENABLED);
+                TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.SeekBarPreference);
+                TypedArray internal = context.obtainStyledAttributes(attrs, prefRes);
+
+                try {
+                    minValue = a.getInt(R.styleable.SeekBarPreference_msbp_minValue, DEFAULT_MIN_VALUE);
+                    maxValue = (a.getInt(R.styleable.SeekBarPreference_msbp_maxValue, DEFAULT_MAX_VALUE));
+                    dialogEnabled = a.getBoolean(R.styleable.SeekBarPreference_msbp_dialogEnabled, DEFAULT_DIALOG_ENABLED);
+
+                    measurementUnit = a.getString(R.styleable.SeekBarPreference_msbp_measurementUnit);
+                    currentValue = internal.getInt(defValRes, DEFAULT_CURRENT_VALUE);
+                    defaultValue = internal.getInt(defValRes, DEFAULT_CURRENT_VALUE);
+
+                    scale = a.getFloat(R.styleable.SeekBarPreference_msbp_scale, DEFAULT_SCALE);
+
+                    if(isView) {
+                        title = a.getString(R.styleable.SeekBarPreference_msbp_view_title);
+                        summary = a.getString(R.styleable.SeekBarPreference_msbp_view_summary);
+                        currentValue = a.getInt(R.styleable.SeekBarPreference_msbp_view_defaultValue, DEFAULT_CURRENT_VALUE);
+                        defaultValue = a.getInt(R.styleable.SeekBarPreference_msbp_view_defaultValue, DEFAULT_CURRENT_VALUE);
+
+                        isEnabled = a.getBoolean(R.styleable.SeekBarPreference_msbp_view_enabled, DEFAULT_IS_ENABLED);
+                    }
                 }
-            }
-            finally {
-                a.recycle();
-                internal.recycle();
-            }
+                finally {
+                    a.recycle();
+                    internal.recycle();
+                }
+            } catch (ClassNotFoundException ignored) {
+
+            } catch (IllegalAccessException ignored) {
+
+            } catch (NoSuchFieldException ignored) {}
         }
     }
 
