@@ -96,16 +96,20 @@ public class PreferenceControllerDelegate implements SeekBarView.SeekBarListener
             isEnabled = DEFAULT_IS_ENABLED;
         }
         else {
+            int prefRes = context.getResources().getIdentifier("Preference", "styleable", "android");
+            int defValRes = context.getResources().getIdentifier("Preference_defaultValue", "styleable", "android");
+
             TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.SeekBarPreference);
-            TypedArray internal = context.obtainStyledAttributes(attrs, com.android.internal.R.styleable.Preference);
+            TypedArray internal = context.obtainStyledAttributes(attrs, context.getResources().getIntArray(prefRes));
+
             try {
                 minValue = a.getInt(R.styleable.SeekBarPreference_msbp_minValue, DEFAULT_MIN_VALUE);
                 maxValue = (a.getInt(R.styleable.SeekBarPreference_msbp_maxValue, DEFAULT_MAX_VALUE));
                 dialogEnabled = a.getBoolean(R.styleable.SeekBarPreference_msbp_dialogEnabled, DEFAULT_DIALOG_ENABLED);
 
                 measurementUnit = a.getString(R.styleable.SeekBarPreference_msbp_measurementUnit);
-                currentValue = internal.getInt(com.android.internal.R.styleable.Preference_defaultValue, DEFAULT_CURRENT_VALUE);
-                defaultValue = internal.getInt(com.android.internal.R.styleable.Preference_defaultValue, DEFAULT_CURRENT_VALUE);
+                currentValue = internal.getInt(context.getResources().getInteger(defValRes), DEFAULT_CURRENT_VALUE);
+                defaultValue = internal.getInt(context.getResources().getInteger(defValRes), DEFAULT_CURRENT_VALUE);
 
                 scale = a.getFloat(R.styleable.SeekBarPreference_msbp_scale, DEFAULT_SCALE);
 
