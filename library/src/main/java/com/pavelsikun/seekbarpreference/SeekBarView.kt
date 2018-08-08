@@ -10,7 +10,9 @@ import android.view.View
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.TextView
 import com.pavelsikun.seekbarpreference.PreferenceControllerDelegate.formatValue
+import com.pavelsikun.seekbarpreference.R.id.down
 import com.rey.material.widget.Slider
 
 class SeekBarView : ConstraintLayout, View.OnClickListener, Slider.OnPositionChangeListener {
@@ -18,15 +20,16 @@ class SeekBarView : ConstraintLayout, View.OnClickListener, Slider.OnPositionCha
     constructor(context: Context, attributeSet: AttributeSet) : super(context, attributeSet)
     constructor(context: Context, attributeSet: AttributeSet, defStyleAttr: Int) : super(context, attributeSet, defStyleAttr)
 
-    lateinit var seekBar: Slider
-    lateinit var valueView: AppCompatTextView
-    lateinit var measurementView: AppCompatTextView
-    lateinit var valueHolderView: LinearLayout
-    lateinit var buttonHolderView: LinearLayout
-    lateinit var bottomLineView: FrameLayout
-    lateinit var up: ImageView
-    lateinit var down: ImageView
-    lateinit var reset: ImageView
+    val seekBar: Slider by lazy { findViewById<Slider>(R.id.seekbar) }
+    val valueView: TextView by lazy { findViewById<TextView>(R.id.seekbar_value) }
+    val measurementView: TextView by lazy { findViewById<TextView>(R.id.measurement_unit) }
+    val valueHolderView: LinearLayout by lazy { findViewById<LinearLayout>(R.id.value_holder) }
+    val buttonHolderView: LinearLayout by lazy { findViewById<LinearLayout>(R.id.button_holder) }
+    val bottomLineView: FrameLayout by lazy { findViewById<FrameLayout>(R.id.bottom_line) }
+    val up: ImageView by lazy { findViewById<ImageView>(R.id.up) }
+    val down: ImageView by lazy { findViewById<ImageView>(R.id.down) }
+    val reset: ImageView by lazy { findViewById<ImageView>(R.id.reset) }
+
     lateinit var delegate: PreferenceControllerDelegate
 
     var dialogEnabled = true
@@ -42,16 +45,6 @@ class SeekBarView : ConstraintLayout, View.OnClickListener, Slider.OnPositionCha
 
     override fun onFinishInflate() {
         super.onFinishInflate()
-
-        seekBar = findViewById(R.id.seekbar)
-        valueView = findViewById(R.id.seekbar_value)
-        measurementView = findViewById(R.id.measurement_unit)
-        valueHolderView = findViewById(R.id.value_holder)
-        buttonHolderView = findViewById(R.id.button_holder)
-        bottomLineView = findViewById(R.id.bottom_line)
-        up = findViewById(R.id.up)
-        down = findViewById(R.id.down)
-        reset = findViewById(R.id.reset)
 
         val colorAttr = context.theme.obtainStyledAttributes(TypedValue().data, intArrayOf(R.attr.colorAccent))
         val color = colorAttr.getColor(0, 0)

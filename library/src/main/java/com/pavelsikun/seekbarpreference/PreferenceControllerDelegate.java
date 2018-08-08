@@ -332,7 +332,7 @@ public class PreferenceControllerDelegate implements SeekBarView.SeekBarListener
 
     void setMeasurementUnit(String measurementUnit) {
         this.measurementUnit = measurementUnit;
-        if (seekBarView != null) seekBarView.measurementView.setText(measurementUnit);
+        if (seekBarView != null) seekBarView.getMeasurementView().setText(measurementUnit);
     }
 
     boolean isDialogEnabled() {
