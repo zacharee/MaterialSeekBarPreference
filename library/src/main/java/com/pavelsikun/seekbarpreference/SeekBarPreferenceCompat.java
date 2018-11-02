@@ -4,12 +4,13 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.os.Build;
-import android.support.v7.preference.Preference;
-import android.support.v7.preference.PreferenceViewHolder;
 import android.util.AttributeSet;
 import android.view.View;
 
 import java.lang.reflect.Field;
+
+import androidx.preference.Preference;
+import androidx.preference.PreferenceViewHolder;
 
 /**
  * Created by Pavel Sikun on 22.05.16.
@@ -71,7 +72,7 @@ public class SeekBarPreferenceCompat extends Preference implements View.OnClickL
     }
 
     @Override
-    protected void onSetInitialValue(boolean restorePersistedValue, Object defaultValue) {
+    protected void onSetInitialValue(Object defaultValue) {
         controllerDelegate.setCurrentValue(getPersistedInt((defaultValue != null ? Integer.valueOf(defaultValue.toString()) : controllerDelegate.getCurrentValue())));
     }
 

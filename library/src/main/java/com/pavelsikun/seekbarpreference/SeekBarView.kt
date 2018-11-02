@@ -1,9 +1,6 @@
 package com.pavelsikun.seekbarpreference
 
 import android.content.Context
-import android.support.constraint.ConstraintLayout
-import android.support.v4.graphics.ColorUtils
-import android.support.v7.widget.AppCompatTextView
 import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.View
@@ -11,8 +8,9 @@ import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.graphics.ColorUtils
 import com.pavelsikun.seekbarpreference.PreferenceControllerDelegate.formatValue
-import com.pavelsikun.seekbarpreference.R.id.down
 import com.rey.material.widget.Slider
 
 class SeekBarView : ConstraintLayout, View.OnClickListener, Slider.OnPositionChangeListener {
