@@ -2,10 +2,10 @@ package com.pavelsikun.seekbarpreference
 
 import android.content.Context
 import android.os.Build
-import android.support.annotation.RequiresApi
 import android.util.AttributeSet
 import android.view.View
 import android.widget.ImageView
+import androidx.annotation.RequiresApi
 
 /*
  * Copyright (C) 2014 The Android Open Source Project
